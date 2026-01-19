@@ -13,10 +13,13 @@ theta_noise  = 40;
 
 theta_target_test = 0;  
 
-SNR_dB       = 0;
+SNR_dB       = Inf;
 
-mic_pos = [0; 0.08];
 c = 343;
+d = 0.08; % 8 cm
+
+mic_pos = [-d/2; d/2];
+
 
 clean_path = 'male_clean_15s.wav';
 noise_path = 'female_piano_14s.wav';
@@ -31,56 +34,72 @@ s_clean = s_clean(1:L);
 v_noise = v_noise(1:L);
 
 %% ================= MULTICHANNEL MIXTURE =================
-x = generate_multichannel_test_signal_v2( ...
-        clean_path, noise_path, ...
-        theta_target, theta_noise, ...
-        SNR_dB);
+[x, target_mc, interf_mc, noise_mc] = create_mixture( s_clean, v_noise, ...
+        theta_target, theta_noise, fs, ...
+        SNR_dB, c, d);
 
 x = x(1:L,:);
 x_mono = x(:,1);
 
+% verify mixture conditoins
+% Recompute components
+sir_check = 10*log10( ...
+    mean(target_mc(:,1).^2) / mean(interf_mc(:,1).^2) );
+
+noise = x_mono - (target_mc(:,1) + interf_mc(:,1));
+snr_check = 10*log10( ...
+    mean((target_mc(:,1)+interf_mc(:,1)).^2) / mean(noise.^2) );
+
+fprintf('SIR = %.2f dB\n', sir_check);
+fprintf('SNR = %.2f dB\n', snr_check);
+
+
+
 %% ================= YOUR MVDR (UNCHANGED) =================
-N = 512; hop = 256; nfft = 512;
-win = hann(N,'symmetric');
-alpha = 0.98;
-delta = 1e-3;
+% -------- STFT params --------
+N = 256;
+hop = 128;
+nfft = 512;
+window = sqrt(hann(N,'periodic'));
 
-micPos = [0; 0.08];
-numMics = 2;
+X = stft_multichannel(x, window, hop, nfft);
+[numFreqs, numFrames, numMics] = size(X);
 
-sigLen = size(x,1);
+freqs = (0:numFreqs-1)' * fs / nfft;
 
-x_pad = [zeros(N,numMics); x; zeros(N,numMics)];
-X = stft_multichannel(x_pad, win, hop, nfft);
-
-[numFreqs, numFrames, ~] = size(X);
-freqs = linspace(0, fs/2, numFreqs);
-
+% -------- Covariance --------
 Rxx = init_covariance(numFreqs, numMics);
+alpha = 0.98;
+
 for n = 1:numFrames
-    Rxx = update_covariance(Rxx, squeeze(X(:,n,:)), alpha);
+    X_frame = squeeze(X(:,n,:));   % [freq x mic]
+    Rxx = update_covariance(Rxx, X_frame, alpha);
 end
 
-d = compute_steering_vector(theta_target_test, freqs, micPos, c);
-W = compute_mvdr_weights(Rxx, d, delta);
+% -------- Steering vector --------
+dvec = compute_steering_vector(theta_target_test, freqs, mic_pos, c);
+
+% -------- MVDR weights --------
+delta = 1e-3;
+W = compute_mvdr_weights(Rxx, dvec, delta);
+
+% -------- Apply MVDR --------
 Y = apply_mvdr(X, W);
 
-y_mvdr = istft(Y, ...
-     'Window', win, ...
-     'OverlapLength', length(win)-hop, ...
-     'FFTLength', nfft, ...
-     'FrequencyRange', 'onesided');
+% -------- ISTFT --------
+y = istft_single_channel(Y, window, hop, nfft, L);
 
 % Crop to original signal length
-y_mvdr_yours = real(y_mvdr(1:sigLen));
+y_mvdr_yours = real(y(1:L));
 
 %% ================= TAKI MVDR (UNCHANGED) =================
+x_pad = [zeros(N,numMics); x; zeros(N,numMics)];
 Y_taki = mvdr_beamformer(x_pad, fs, theta_target_test, mic_pos);
 
 [~, params] = compute_stft(s_clean, fs);
 y_mvdr_taki = compute_istft(Y_taki, params);
 % ---------- Crop to original length ----------
-y_mvdr_taki = y_mvdr_taki(N+1 : N+sigLen);
+y_mvdr_taki = y_mvdr_taki(N+1 : N+L);
 
 
 %% ================= MATLAB MVDR (REFERENCE) =================
@@ -106,7 +125,7 @@ y_mvdr_matlab = bm(x);
 y_mvdr_matlab = y_mvdr_matlab(:);
 
 % Trim to match signal length
-y_mvdr_matlab = y_mvdr_matlab(1:sigLen);
+y_mvdr_matlab = y_mvdr_matlab(1:L);
 
 
 
@@ -178,7 +197,7 @@ fprintf('MATLAB:  %.2f\n', osinr_matlab);
 
 
 %% $$$$$$$$$$$$$ save outputs $$$$$$$$$$$$$$$$$$$$$$$
-audiowrite('../Test_output/COMPARE1_V4_mvdr_mic1_output.wav', s_clean, fs);
-audiowrite('../Test_output/COMPARE1_V4_mvdr_emon_output.wav', y_mvdr_yours, fs);
-audiowrite('../Test_output/COMPARE1_V4_mvdr_taki_output.wav', y_mvdr_taki, fs);
-audiowrite('../Test_output/COMPARE1_V4_mvdr_matlab_output.wav', real(y_mvdr_matlab), fs);
+audiowrite('../Test_output/COMPARE_V4_mvdr_mic1_output.wav', x0, fs);
+audiowrite('../Test_output/COMPARE_V4_mvdr_emon_output.wav', y_mvdr_yours, fs);
+audiowrite('../Test_output/COMPARE_V4_mvdr_taki_output.wav', y_mvdr_taki, fs);
+audiowrite('../Test_output/COMPARE_V4_mvdr_matlab_output.wav', real(y_mvdr_matlab), fs);

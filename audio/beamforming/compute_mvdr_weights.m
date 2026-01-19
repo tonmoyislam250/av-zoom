@@ -9,11 +9,9 @@ W = zeros(numMics, numFreqs);
 for k = 1:numFreqs
     R = Rxx(:,:,k);
     R = R + delta * trace(R)/numMics * eye(numMics);  % loading
-
-    Rinv = inv(R);
     dk = d(:,k);
 
-    W(:,k) = (Rinv * dk) / (dk' * Rinv * dk);
+    W(:,k) = R \ dk / (dk' * (R \ dk));
 end
 
 end

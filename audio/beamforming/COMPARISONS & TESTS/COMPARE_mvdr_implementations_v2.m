@@ -15,7 +15,8 @@
  
  SNR_dB       = 0;
  
- mic_pos = [0; 0.08];
+ d = 0.08; % 8 cm
+ mic_pos = [-d/2; d/2];
  c = 343;
  
  clean_path = 'male_clean_15s.wav';
@@ -46,7 +47,7 @@
  alpha = 0.98;
  delta = 1e-3;
  
- micPos = [0; 0.08];
+ micPos = mic_pos;
  numMics = 2;
  
  sigLen = size(x,1);
