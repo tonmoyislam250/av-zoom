@@ -17,14 +17,14 @@ target = target(1:L);
 interf = interf(1:L);
 
 %% -------- Geometry --------
-c = 343;
+c = 340;
 d = 0.08;                         % 8 cm spacing
 micPos = [-d/2; d/2];             % x-axis (meters)
 
 theta_target = 0;                 % broadside
 theta_target_test = 0;
 theta_interf = 40;                % to the right
-SNR_dB = 5;
+SNR_dB = Inf;
 
 apply_delay = @(x, tau) interp1( ...
     (0:length(x)-1)', x, ...
@@ -72,8 +72,8 @@ title(sprintf('Spectrogram (Channel 1) - SNR: %d dB', SNR_dB));
 disp('Done.');
 
 % Write mixute audio
-audiowrite('FIX_MVDR_V2_mixture_ch1.wav', mixture(:,1), fs);
-audiowrite('FIX_MVDR_V2_mixture_ch2.wav', mixture(:,2), fs);
+audiowrite('../Test_output/FIX_MVDR_V2_mixture_ch1.wav', mixture(:,1), fs);
+% audiowrite('FIX_MVDR_V2_mixture_ch2.wav', mixture(:,2), fs);
 
 %% -------- STFT params --------
 N = 256;
@@ -107,7 +107,7 @@ Y = apply_mvdr(X, W);
 
 %% -------- ISTFT --------
 y = istft_single_channel(Y, window, hop, nfft, L);
-audiowrite('FIX_MVDR_V2_mvdr_output.wav', y, fs);
+audiowrite('../Test_output/FIX_MVDR_V2_mvdr_output.wav', y, fs);
 
 %% ===============================
 %          METRICS

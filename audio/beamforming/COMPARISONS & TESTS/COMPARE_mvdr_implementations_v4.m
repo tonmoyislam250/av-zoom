@@ -15,7 +15,7 @@ theta_target_test = 0;
 
 SNR_dB       = Inf;
 
-c = 343;
+c = 340;
 d = 0.08; % 8 cm
 
 mic_pos = [-d/2; d/2];
