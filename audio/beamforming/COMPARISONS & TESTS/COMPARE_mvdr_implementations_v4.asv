@@ -127,7 +127,6 @@ y_mvdr_matlab = y_mvdr_matlab(1:L);
 
 %% ================= ML Post Enchancement =================
 [y_rn, ~] = audioread("/Users/emonchowdhury/Desktop/Phase 2/av_zoom/audio/models/rnnoise-main/examples/rnnoise_output_16k.wav");
-
 % Energy match to MVDR output
 y_rn = y_rn / rms(y_rn) * rms(x_mono);
 
@@ -195,15 +194,14 @@ fprintf('Mic:     %.2f\n', sisdr_mic);
 fprintf('Yours:   %.2f\n', sisdr_yours);
 fprintf('Taki:    %.2f\n', sisdr_taki);
 fprintf('MATLAB:  %.2f\n', sisdr_matlab);
-fprintf('Model:  %.2f\n', sisdr_model);
-% fprintf('Model (ref: MVDR output):  %.2f\n', sisdr_model);
+fprintf('Model (ref: MVDR output):  %.2f\n', sisdr_model);
 
 fprintf('\nSTOI:\n');
 fprintf('Mic:     %.3f\n', stoi_mic);
 fprintf('Yours:   %.3f\n', stoi_yours);
 fprintf('Taki:    %.3f\n', stoi_taki);
 fprintf('MATLAB:  %.3f\n', stoi_matlab);
-fprintf('Model:  %.3f\n', stoi_model);
+fprintf('Model (ref: MVDR output):  %.3f\n', stoi_model);
 
 fprintf('\nOSINR (dB):\n');
 fprintf('Mic:     %.2f\n', osinr_mic);
@@ -221,5 +219,3 @@ audiowrite('../Test_output/COMPARE_V4_mvdr_mic1_output.wav', x0, fs);
 audiowrite('../Test_output/COMPARE_V4_mvdr_emon_output.wav', y_mvdr_yours, fs);
 audiowrite('../Test_output/COMPARE_V4_mvdr_taki_output.wav', y_mvdr_taki, fs);
 audiowrite('../Test_output/COMPARE_V4_mvdr_matlab_output.wav', real(y_mvdr_matlab), fs);
-
-

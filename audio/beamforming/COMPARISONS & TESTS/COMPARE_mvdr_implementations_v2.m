@@ -186,7 +186,7 @@ fprintf('STFT roundtrip SNR: %.2f dB\n', snr_rt);
  fprintf('\nOSINR (dB):\n');
  fprintf('Mic:   %.2f\n', osinr_mic);
  fprintf('Yours: %.2f\n', osinr_yours);
- fprintf('Taki:  %.2f\n', osinr_taki);
+ fprintf('Taki:  %.2f\n\n\n', osinr_taki);
  
  
  
