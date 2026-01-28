@@ -5,7 +5,7 @@ addpath('/Users/emonchowdhury/Desktop/Phase 2/av_zoom/audio/beamforming');
 addpath('/Users/emonchowdhury/Desktop/Phase 2/av_zoom/audio/beamforming/Taki');
 addpath('/Users/emonchowdhury/Desktop/Phase 2/av_zoom/audio/beamforming/Metrics');
 addpath('/Users/emonchowdhury/Desktop/Phase 2/av_zoom/audio/beamforming/Test_audio/');
-
+addpath('/Users/emonchowdhury/Desktop/Phase 2/av_zoom/audio/beamforming/Dataset Generation');
 %% ================= CONFIG =================
 fs = 16000;
 theta_target = 0;
@@ -22,6 +22,7 @@ mic_pos = [-d/2; d/2];
 
 
 clean_path = 'male_clean_15s.wav';
+% clean_path = '/Users/emonchowdhury/Desktop/Phase 2/av_zoom/audio/beamforming/Dataset Generation/Male_clean/1000_part1.flac';
 noise_path = 'female_piano_14s.wav';
 
 %% ================= LOAD SIGNALS =================
@@ -37,7 +38,9 @@ v_noise = v_noise(1:L);
 [x, target_mc, interf_mc, noise_mc] = create_mixture_v2( s_clean, v_noise, ...
         theta_target, theta_noise, fs, ...
         SNR_dB, c, d);
-
+%% ******
+% x = audioread('/Users/emonchowdhury/Desktop/Phase 2/av_zoom/audio/beamforming/Dataset Generation/stereo_output.wav');
+%% *******
 x = x(1:L,:);
 x_mono = x(:,1);
 
@@ -61,6 +64,7 @@ hop = 128;
 nfft = 512;
 window = sqrt(hann(N,'periodic'));
 
+%% Apply mvdr
 X = stft_multichannel(x, window, hop, nfft);
 [numFreqs, numFrames, numMics] = size(X);
 
@@ -90,6 +94,7 @@ y_mvdr = istft_single_channel(Y, window, hop, nfft, L);
 
 % Crop to original signal length
 y_mvdr_yours = real(y_mvdr(1:L));
+
 
 %% ================= TAKI MVDR =================
 x_pad = [zeros(N,numMics); x; zeros(N,numMics)];
@@ -126,16 +131,16 @@ y_mvdr_matlab = y_mvdr_matlab(1:L);
 
 
 %% ================= ML Post Enchancement =================
-[y_rn, ~] = audioread("/Users/emonchowdhury/Desktop/Phase 2/av_zoom/audio/models/rnnoise-main/examples/rnnoise_output_16k.wav");
+[y_model, ~] = audioread("/Users/emonchowdhury/Desktop/Phase 2/av_zoom/audio/models/custom_model_1/model_enhanced_output/v1/COMPARE_V4_mvdr_emon_output_enhanced.wav");
 
 % Energy match to MVDR output
-y_rn = y_rn / rms(y_rn) * rms(x_mono);
+y_model = y_model / rms(y_model) * rms(x_mono);
 
 
 %% ================= ALIGN SIGNALS =================
 Lmin = min([length(s_clean), length(x_mono), ...
             length(y_mvdr_yours), length(y_mvdr_taki), ...
-            length(y_mvdr_matlab), length(y_rn)]);
+            length(y_mvdr_matlab), length(y_model)]);
 
 s  = s_clean(1:Lmin);
 x0 = x_mono(1:Lmin);
@@ -146,14 +151,14 @@ x0 = x_mono(1:Lmin);
 [y_mvdr_taki, lag2] = alignsignals(y_mvdr_taki, s);
 
 % ---------- Align ML Enhacer output ----------
-[y_rn_aligned, lag3] = alignsignals(y_rn, y_mvdr_yours);
+[y_model_aligned, lag3] = alignsignals(y_model, y_mvdr_yours);
 
 
 
 y1 = y_mvdr_yours(1:Lmin);
 y2 = y_mvdr_taki(1:Lmin);
 y3 = real(y_mvdr_matlab(1:Lmin));
-y4 = y_rn_aligned(1:Lmin);
+y4 = y_model_aligned(1:Lmin);
 
 
 fprintf('\n\nAlignment lag (mean): Yours=%d, Taki=%d\n, RNNoise=%d\n',  mean(lag1), mean(lag2), mean(lag3));
@@ -181,11 +186,21 @@ res_mic   = x0 - s;
 res_yours = y1 - s;
 res_taki  = y2 - s;
 res_matlab = y3 - s;
+res_model = y4 - s;
 
 osinr_mic   = 10*log10( sum(s.^2) / (sum(res_mic.^2)   + 1e-12) );
 osinr_yours = 10*log10( sum(s.^2) / (sum(res_yours.^2) + 1e-12) );
 osinr_taki  = 10*log10( sum(s.^2) / (sum(res_taki.^2)  + 1e-12) );
 osinr_matlab = 10*log10( sum(s.^2) / (sum(res_matlab.^2) + 1e-12) );
+osinr_model = 10*log10( sum(s.^2) / (sum(res_model.^2) + 1e-12) );
+
+% ================= ViSQOL =================
+[visqol_mic,ftable_mic,ttable_mic] = visqol(x0,s,fs,mode='speech', OutputMetric="MOS and NSIM");
+[visqol_yours,ftable_yours,ttable_yours] = visqol(y1,s,fs,mode='speech', OutputMetric="MOS and NSIM");
+[visqol_taki,ftable_taki,ttable_taki] = visqol(y2,s,fs,mode='speech', OutputMetric="MOS and NSIM");
+[visqol_matlab,ftable_matlab,ttable_matlab] = visqol(y3,s,fs,mode='speech', OutputMetric="MOS and NSIM");
+[visqol_model,ftable_model,ttable_model] = visqol(y4,s,fs,mode='speech', OutputMetric="MOS and NSIM");
+
 
 %% ================= DISPLAY =================
 fprintf('\n===== FAIR MVDR COMPARISON =====\n');
@@ -209,7 +224,16 @@ fprintf('\nOSINR (dB):\n');
 fprintf('Mic:     %.2f\n', osinr_mic);
 fprintf('Yours:   %.2f\n', osinr_yours);
 fprintf('Taki:    %.2f\n', osinr_taki);
-fprintf('MATLAB:  %.2f\n\n\n', osinr_matlab);
+fprintf('MATLAB:  %.2f\n', osinr_matlab);
+fprintf('Model:  %.2f\n', osinr_model);
+
+fprintf('\nViSQOL (MOS -->[1,5], (NSIM) --> [-1,1]):\n');
+fprintf('Mic:     MOS = %.2f, NSIM = %.2f\n', visqol_mic(1),visqol_mic(2));
+fprintf('Yours:   MOS = %.2f, NSIM = %.2f\n', visqol_yours(1),visqol_yours(2));
+fprintf('Taki:    MOS = %.2f, NSIM = %.2f\n', visqol_taki(1),visqol_taki(2));
+fprintf('MATLAB:  MOS = %.2f, NSIM = %.2f\n', visqol_matlab(1),visqol_matlab(2));
+fprintf('Model:   MOS = %.2f, NSIM = %.2f\n\n\n', visqol_model(1),visqol_model(2));
+
 
 
 
@@ -221,5 +245,7 @@ audiowrite('../Test_output/COMPARE_V4_mvdr_mic1_output.wav', x0, fs);
 audiowrite('../Test_output/COMPARE_V4_mvdr_emon_output.wav', y_mvdr_yours, fs);
 audiowrite('../Test_output/COMPARE_V4_mvdr_taki_output.wav', y_mvdr_taki, fs);
 audiowrite('../Test_output/COMPARE_V4_mvdr_matlab_output.wav', real(y_mvdr_matlab), fs);
+audiowrite('../Test_output/COMPARE_V4_model_output.wav', y_model, fs);
+
 
 
