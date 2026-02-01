@@ -2,7 +2,7 @@ name: MVDR Dataset Pipeline
 
 on:
   workflow_dispatch:
-
+  push:
 jobs:
   build-mvdr-dataset:
     runs-on: ubuntu-latest
@@ -36,7 +36,7 @@ jobs:
       - name: Download Pre Dataset from Transfer.sh
         if: steps.cache-pre.outputs.cache-hit != 'true'
         run: |
-          curl -L "https://transfer-zip-bucket-eu-0.aeefb6f16ea9e6e091f832288dc6c896.eu.r2.cloudflarestorage.com/697ef1f4803e265316ce9c43/bundle?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=e593d7a88ce182df2d550c95a027a56e%2F20260201%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260201T065817Z&X-Amz-Expires=600&X-Amz-Signature=fa047eba474920e0567a534c6c49ce9751404d3eaf5496afb0d3e4313e48ded0&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3D%22Pre_MVDR_Dataset.zip%22&x-amz-checksum-mode=ENABLED&x-id=GetObject" -o Pre_MVDR_Dataset.zip
+          curl -L "https://transfer-zip-bucket-eu-0.aeefb6f16ea9e6e091f832288dc6c896.eu.r2.cloudflarestorage.com/697ef1f4803e265316ce9c43/bundle?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=e593d7a88ce182df2d550c95a027a56e%2F20260201%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260201T073833Z&X-Amz-Expires=600&X-Amz-Signature=6ba0495c16f8f70f52c63366db64db10cf56bf813ab860bfbfd3790a6e82cb13&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3D%22Pre_MVDR_Dataset.zip%22&x-amz-checksum-mode=ENABLED&x-id=GetObject" -o Pre_MVDR_Dataset.zip
 
       # -------------------------------
       # Extract dataset cleanly
