@@ -1,0 +1,28 @@
+name: Cache Pre MVDR Dataset
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cache-dataset:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # -------------------------------
+      # Restore dataset cache
+      # -------------------------------
+      - name: Restore Pre_MVDR_Dataset.zip cache
+        uses: actions/cache@v4
+        id: dataset-cache
+        with:
+          path: Pre_MVDR_Dataset.zip
+          key: pre-mvdr-dataset-v1
+
+      # -------------------------------
+      # Show path (debug)
+      # -------------------------------
+      - name: Show dataset path
+        run: realpath Pre_MVDR_Dataset
