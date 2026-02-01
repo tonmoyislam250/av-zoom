@@ -22,6 +22,15 @@ jobs:
           key: pre-mvdr-dataset-v1
 
       # -------------------------------
+      # Download only if NOT cached
+      # -------------------------------
+      - name: Download dataset
+        if: steps.dataset-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -L -o Pre_MVDR_Dataset.zip \
+          "https://transfer-zip-bucket-eu-0.aeefb6f16ea9e6e091f832288dc6c896.eu.r2.cloudflarestorage.com/697ef1f4803e265316ce9c43/bundle?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=e593d7a88ce182df2d550c95a027a56e%2F20260201%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260201T075232Z&X-Amz-Expires=600&X-Amz-Signature=10b3bcc2818b58b6bf41a5140d416a55715b1c010cf939ef8a04f794249f8de7&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3D%22Pre_MVDR_Dataset.zip%22&x-amz-checksum-mode=ENABLED&x-id=GetObject"
+          
+      # -------------------------------
       # Show path (debug)
       # -------------------------------
       - name: Show dataset path
