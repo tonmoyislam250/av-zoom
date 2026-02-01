@@ -44,8 +44,6 @@ jobs:
       - name: Extract dataset
         run: |
           unzip -o Pre_MVDR_Dataset.zip
-          root=$(unzip -Z1 Pre_MVDR_Dataset.zip | head -1 | cut -d/ -f1)
-          mv "$root" Pre_MVDR_Dataset
 
       # -------------------------------
       # Show dataset paths
