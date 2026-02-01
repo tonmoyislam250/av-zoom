@@ -227,13 +227,13 @@ end
 
 %% Main processing
 % Load folder information
-male_folder = '..\..\Pre_MVDR_Dataset\Male_clean';
-female_folder = '..\..\Pre_MVDR_Dataset\Female';
-music_folder = '..\..\Pre_MVDR_Dataset\Music';
-noise_folder = '..\..\Pre_MVDR_Dataset\Noise';
+male_folder = '..\..\..\Pre_MVDR_Dataset\Male_clean';
+female_folder = '..\..\..\Pre_MVDR_Dataset\Female';
+music_folder = '..\..\..\Pre_MVDR_Dataset\Music';
+noise_folder = '..\..\..\Pre_MVDR_Dataset\Noise';
 
 % Create output folders for each mixture type
-output_base = '..\..\Post_MVDR_Dataset';
+output_base = '..\..\..\Post_MVDR_Dataset';
 output_A = fullfile(output_base, 'female_only');
 output_B = fullfile(output_base, 'female_music');
 output_C = fullfile(output_base, 'female_noise');
