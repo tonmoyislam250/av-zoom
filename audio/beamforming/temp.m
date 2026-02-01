@@ -228,13 +228,17 @@ end
 %% Main processing
 % Load JSON file with names to exclude
 exclude_names_file = 'unique_names_array.json';
-fid = fopen(exclude_names_file, 'r');
+fid = fopen(exclude_names_file, 'r', 'n', 'UTF-8');
 if fid == -1
     error('Cannot open %s', exclude_names_file);
 end
-raw = fread(fid, inf);
-str = char(raw');
+raw = fread(fid, inf, 'uint8');
 fclose(fid);
+% Remove UTF-8 BOM if present
+if length(raw) >= 3 && raw(1) == 239 && raw(2) == 187 && raw(3) == 191
+    raw = raw(4:end);
+end
+str = char(raw');
 exclude_names = jsondecode(str);
 fprintf('Loaded %d names to exclude from male speech selection\n\n', length(exclude_names));
 
