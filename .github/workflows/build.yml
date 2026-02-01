@@ -1,0 +1,60 @@
+name: MVDR Dataset Pipeline
+
+on:
+  workflow_dispatch:   # manual run button
+
+jobs:
+  build-mvdr-dataset:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -------------------------------
+      # Install MATLAB
+      # -------------------------------
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+
+      # -------------------------------
+      # Download Pre_MVDR_Dataset
+      # -------------------------------
+      - name: Download Pre_MVDR_Dataset.zip from Dropbox
+        run: |
+          wget -O Pre_MVDR_Dataset.zip "https://www.dropbox.com/scl/fi/vgtu7tn4qlt0jtxj39bd6/Pre_MVDR_Dataset.zip?rlkey=s6xofnyco0aq4wqwbjak0pej3&dl=1"
+
+      # -------------------------------
+      # Unzip dataset
+      # -------------------------------
+      - name: Extract dataset
+        run: |
+          unzip Pre_MVDR_Dataset.zip -d Pre_MVDR_Dataset
+
+      # -------------------------------
+      # Run MATLAB script
+      # -------------------------------
+      - name: Run MVDR MATLAB Script
+        uses: matlab-actions/run-command@v2
+        with:
+          command: |
+            addpath(pwd);
+            disp("Starting MVDR generation...");
+            run('audio/beamforming/generate_mixture_NoReverb_MVDR_V1_Final.m');
+            disp("Finished script.");
+
+      # -------------------------------
+      # Zip the output dataset
+      # -------------------------------
+      - name: Zip Post_MVDR_Dataset
+        run: |
+          zip -r Post_MVDR_Dataset.zip Post_MVDR_Dataset
+
+      # -------------------------------
+      # Upload as artifact
+      # -------------------------------
+      - name: Upload Post_MVDR_Dataset Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Post_MVDR_Dataset
+          path: Post_MVDR_Dataset.zip
