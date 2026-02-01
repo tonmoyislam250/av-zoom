@@ -17,7 +17,9 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           release: R2025b
-          products: Signal_Processing_Toolbox
+          products: |
+            Signal_Processing_Toolbox
+            Communications_Toolbox
 
       # -------------------------------
       # Cache Pre Dataset ZIP
@@ -42,7 +44,7 @@ jobs:
       # -------------------------------
       - name: Extract dataset
         run: |
-          unzip -o Pre_MVDR_Dataset.zip
+          unzip -oq Pre_MVDR_Dataset.zip
 
       # -------------------------------
       # Show dataset paths
