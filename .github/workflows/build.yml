@@ -14,8 +14,13 @@ jobs:
       # -------------------------------
       # Install MATLAB
       # -------------------------------
-      - name: Set up MATLAB
+      - name: Set up MATLAB with license
         uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2025b
+          products: Signal_Processing_Toolbox
+          email: ${{ secrets.MW_EMAIL }}
+          password: ${{ secrets.MW_PASSWORD }}
 
       # -------------------------------
       # Download Pre_MVDR_Dataset
