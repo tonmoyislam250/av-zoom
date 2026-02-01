@@ -34,7 +34,7 @@ jobs:
       # -------------------------------
       - name: Extract dataset
         run: |
-          unzip Pre_MVDR_Dataset.zip -d Pre_MVDR_Dataset
+          unzip Pre_MVDR_Dataset.zip
 
       # -------------------------------
       # Run MATLAB script
