@@ -66,7 +66,7 @@ jobs:
             disp(fullfile(pwd,"Pre_MVDR_Dataset"));
             disp("Post path:");
             disp(fullfile(pwd,"Post_MVDR_Dataset"));
-            run('audio/beamforming/generate_mixture_NoReverb_MVDR_V1_Final.m');
+            run('audio/beamforming/temp.m');
 
       # -------------------------------
       # Zip output
