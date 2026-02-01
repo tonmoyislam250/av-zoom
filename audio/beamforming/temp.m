@@ -8,7 +8,7 @@ clear; clc; close all;
 rng('shuffle');
 
 %% Process N male files
-n_to_process = 1400;
+n_to_process = 5000;
 %% apply mvdr ?
 apply_mvdr_to_mixture = true;
 
