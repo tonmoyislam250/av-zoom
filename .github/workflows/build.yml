@@ -43,6 +43,8 @@ jobs:
         uses: matlab-actions/run-command@v2
         with:
           command: |
+            realpath Post_MVDR_Dataset
+            realpath Pre_MVDR_Dataset
             addpath(pwd);
             disp("Starting MVDR generation...");
             run('audio/beamforming/generate_mixture_NoReverb_MVDR_V1_Final.m');
