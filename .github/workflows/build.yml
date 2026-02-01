@@ -2,7 +2,6 @@ name: MVDR Dataset Pipeline
 
 on:
   workflow_dispatch:
-  push:
 jobs:
   build-mvdr-dataset:
     runs-on: ubuntu-latest
